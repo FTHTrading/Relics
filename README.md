@@ -8,7 +8,7 @@
 [![Status: Pre-Audit](https://img.shields.io/badge/contracts-pre--audit-orange)](#status-legend)
 [![Catalog](https://img.shields.io/badge/catalog-74%20pieces%20reviewed-blue)](./catalog)
 
-Part of the [FTHTrading](https://github.com/FTHTrading) / UnyKorn stack. Public showcase: [relics.unykorn.ai](https://relics.unykorn.ai) (proposed, not yet deployed — see [Status](#status-legend)).
+Part of the [FTHTrading](https://github.com/FTHTrading) / UnyKorn stack. Public showcase: [relics.unykorn.ai](https://relics.unykorn.ai) — live.
 
 ---
 
@@ -18,6 +18,7 @@ Part of the [FTHTrading](https://github.com/FTHTrading) / UnyKorn stack. Public 
 - [Status legend](#status-legend)
 - [Architecture](#architecture)
 - [Structuring paths](#structuring-paths)
+- [Who's actually the issuer](#whos-actually-the-issuer)
 - [Repository layout](#repository-layout)
 - [The catalog](#the-catalog)
 - [Contracts](#contracts)
@@ -95,18 +96,34 @@ flowchart TD
 
 ## Structuring paths
 
-Which contract a piece uses is decided by the rights review, not by preference. See [`catalog/og4ever-bottega-mortet-catalog.csv`](./catalog/og4ever-bottega-mortet-catalog.csv) for the full per-piece assessment.
+Which contract a piece uses is decided by the rights review, not by preference. See [`catalog/og4ever-bottega-mortet-catalog.csv`](./catalog/og4ever-bottega-mortet-catalog.csv) for the full per-piece assessment, and [`legal/SECURITIES-STRUCTURING.md`](./legal/SECURITIES-STRUCTURING.md) for the full mechanics of each path (offering caps, investor eligibility, cost, timeline — sourced and dated, not assumed).
 
 | Path | Contract | Fits | Example from the catalog |
 |---|---|---|---|
-| 🟢 **A — Reg A+ Tier 2** | `ArtEditionSPV` | No living person depicted, or consent fully documented | *David on the Move* (classical reinterpretation, no living subject) |
+| 🟢 **A — Reg A+ Tier 2** | `ArtEditionSPV` | No living person depicted, or consent fully documented; audience genuinely retail | *David on the Move* (classical reinterpretation, no living subject) |
 | 🟢 **B — Reg D 506(c)** | `ArtEditionSPV` | Some documented relationship; needs a private-placement release, not full public clearance | Hugo Sanchez pieces (artist photographed with subject at signing) |
-| 🟢 **C — Custody receipt** | `ArtCustodyReceipt` | Buyer wants outright title, not fractional investment; best fit for trading cards | Murray Henderson's *Beautiful Dozen* card set |
+| 🟢 **C — Custody receipt** | `ArtCustodyReceipt` | Buyer wants outright title, not fractional investment; best fit for trading cards; cleanest legal profile of all four paths | Murray Henderson's *Beautiful Dozen* card set |
+| 🟢 **D — Reg CF** | `ArtEditionSPV` | Testing real retail demand before committing to Path A's audit overhead; $5M/12mo cap, must route through a registered funding portal | Not yet applied to a specific piece — see [`legal/SECURITIES-STRUCTURING.md`](./legal/SECURITIES-STRUCTURING.md#path-d--regulation-crowdfunding-reg-cf) |
 | 🟡 **Blocked** | — | Deceased-person estate rights, unlicensed photo, undocumented celebrity likeness, **or unresolved trademark/sponsor-logo exposure** | Any Maradona / Kobe / Senna piece; the John Dominis 1968 photo piece; *Miami Bull* (see [below](#the-catalog)) |
 
 `ArtEditionSPV` and `ArtCustodyReceipt` are **deliberately separate contracts**, not one contract with a mode flag — it keeps the Howey Test analysis clean for whichever path a given piece uses.
 
 > ⚠️ **A piece needs to clear two independent axes, not one.** *Publicity-rights risk* (does the piece depict a real person without documented consent) and *trademark/logo risk* (does the piece depict a third party's brand — a sponsor logo, team crest, league mark) are separate legal questions. A piece can pass one and fail the other — see the *Miami Bull* finding below, which cleared publicity-rights review cleanly (no face shown) while carrying an undisclosed "ORACLE" wordmark and Mobil 1 / Bosch branding across the car livery.
+
+---
+
+## Who's actually the issuer
+
+Which exemption to use (above) is the smaller question. The bigger one: **who's on the hook for it.** `ArtEditionSPV.sol` currently names UnyKorn LLC as SPV manager by default — nobody explicitly decided that, the repo just defaulted to it.
+
+Every direct precedent for "retail fractional-share collectibles platform" was checked against current sources: **Rally** shut down and rolled into a closed-end vehicle (announced 2026-07-17, 110 realized exits averaged only 1.37x gross before fees); **Otis**, **Collectable**, **Mythic Markets**, **Here.co**, and **LEX Markets** all shut down between 2021–2024; **Vint** dropped its retail Reg A+ offering entirely. Seven of eight direct comps failed or retreated. **Dibbs** is the exception that survived — not by fixing the retail marketplace, but by *shutting it down and becoming an infrastructure vendor* to other issuers instead. **Masterworks** is the only platform still running one at scale, and only because of blue-chip ticket sizes this catalog doesn't have.
+
+Two options, laid out in full with sourcing in [`legal/BUSINESS-MODEL-OPTIONS.md`](./legal/BUSINESS-MODEL-OPTIONS.md):
+
+- **Option A — UnyKorn is the issuer.** Owns the audit cost, the offering-circular liability, and the exact unit-economics mismatch (compliance cost vs. collectibles ticket size) that the comparable-platform graveyard died of.
+- **Option B — UnyKorn is the infrastructure vendor.** Licenses the contracts and pipeline to whoever sponsors an offering (LD Capital, Bottega Mortet/OG4ever, a platform partner) for setup + SaaS + attestation fees — no issuer liability, and consistent with the "gateway and rails, never the funder" posture already standing everywhere else on this stack.
+
+**Not resolved in this repo — an operator decision, not an engineering one.** The site currently reads as Option A by default.
 
 ---
 
@@ -123,6 +140,9 @@ Relics/
 │   └── provision_spv_wallet.js  # BitGo segregated-wallet provisioning (2-of-3)
 ├── catalog/
 │   └── og4ever-bottega-mortet-catalog.csv   # 74-piece rights/structuring review
+├── legal/
+│   ├── SECURITIES-STRUCTURING.md            # Paths A/B/C/D mechanics -- caps, cost, timeline, sourced
+│   └── BUSINESS-MODEL-OPTIONS.md            # Who's the issuer -- comparable-platform research
 ├── deals/
 │   └── BM-07-david-on-the-move.json         # Sample deal-intake file for provisioning
 ├── package.json
@@ -267,7 +287,9 @@ Start on `--env test` (BitGo sandbox) for everything. Production runs require `C
 - [ ] Provision the first live BitGo sandbox wallet end-to-end
 - [x] Deploy [relics.unykorn.ai](https://relics.unykorn.ai) — live 2026-08-17
 - [ ] Add the site source itself to this repo (currently deployed from a separate local build, not yet checked in here)
-- [ ] Securities counsel review of Path A (Reg A+) vs. Path B (Reg D 506(c)) before any offering document is drafted
+- [ ] Securities counsel review of Path A (Reg A+) vs. Path B (Reg D 506(c)) vs. Path D (Reg CF) before any offering document is drafted
+- [ ] **Operator decision: Option A (UnyKorn as issuer) vs. Option B (UnyKorn as infrastructure vendor)** — see [`legal/BUSINESS-MODEL-OPTIONS.md`](./legal/BUSINESS-MODEL-OPTIONS.md). Blocks the storefront copy, the buy-flow, and the SPV-manager field in any real `ArtEditionSPV` deployment until decided
+- [ ] Pick a Reg CF funding-portal partner if Path D is used for any piece — this repo doesn't build one
 
 ---
 
