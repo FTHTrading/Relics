@@ -55,13 +55,13 @@ Every claim in this README and in the linked catalog resolves to something you c
 
 | Layer | Status | Detail |
 |---|:---:|---|
-| Catalog review | 🟢 REAL | 74 pieces reviewed; 6 cleared for public preview |
+| Catalog review | 🟢 REAL | 74 pieces reviewed on 2 axes (publicity-rights + trademark/logo); 3 cleared for public preview as of 2026-08-17 (was 6, before the trademark axis caught AL-02/BE-series/FJ-series) |
 | Smart contracts | 🟢 REAL | Compiled clean against the pinned toolchain; **not externally audited** |
 | IPFS metadata + hashing | 🟢 REAL | 6 pieces hashed (`ipfs-only-hash`, offline, `ipfs add`-compatible) |
 | IPFS pinning (live network) | 🟡 GATED | Script ready (`scripts/pin_to_ipfs.js`); needs a Pinata/web3.storage API key |
 | BitGo wallet provisioning | 🟡 GATED | Script ready (`scripts/provision_spv_wallet.js`); no wallet created yet |
 | Securities / licensing clearance | 🟡 GATED | 0 of 74 pieces cleared for any public or private offering |
-| `relics.unykorn.ai` deployment | 🟡 GATED | Site built; not yet deployed — needs a Cloudflare token |
+| `relics.unykorn.ai` deployment | 🟢 REAL | Live 2026-08-17. Site source not yet added to this repo — see roadmap |
 
 ---
 
@@ -102,9 +102,11 @@ Which contract a piece uses is decided by the rights review, not by preference. 
 | 🟢 **A — Reg A+ Tier 2** | `ArtEditionSPV` | No living person depicted, or consent fully documented | *David on the Move* (classical reinterpretation, no living subject) |
 | 🟢 **B — Reg D 506(c)** | `ArtEditionSPV` | Some documented relationship; needs a private-placement release, not full public clearance | Hugo Sanchez pieces (artist photographed with subject at signing) |
 | 🟢 **C — Custody receipt** | `ArtCustodyReceipt` | Buyer wants outright title, not fractional investment; best fit for trading cards | Murray Henderson's *Beautiful Dozen* card set |
-| 🟡 **Blocked** | — | Deceased-person estate rights, unlicensed photo, undocumented celebrity likeness | Any Maradona / Kobe / Senna piece; the John Dominis 1968 photo piece |
+| 🟡 **Blocked** | — | Deceased-person estate rights, unlicensed photo, undocumented celebrity likeness, **or unresolved trademark/sponsor-logo exposure** | Any Maradona / Kobe / Senna piece; the John Dominis 1968 photo piece; *Miami Bull* (see [below](#the-catalog)) |
 
 `ArtEditionSPV` and `ArtCustodyReceipt` are **deliberately separate contracts**, not one contract with a mode flag — it keeps the Howey Test analysis clean for whichever path a given piece uses.
+
+> ⚠️ **A piece needs to clear two independent axes, not one.** *Publicity-rights risk* (does the piece depict a real person without documented consent) and *trademark/logo risk* (does the piece depict a third party's brand — a sponsor logo, team crest, league mark) are separate legal questions. A piece can pass one and fail the other — see the *Miami Bull* finding below, which cleared publicity-rights review cleanly (no face shown) while carrying an undisclosed "ORACLE" wordmark and Mobil 1 / Bosch branding across the car livery.
 
 ---
 
@@ -132,19 +134,34 @@ Relics/
 
 ## The catalog
 
-[`catalog/og4ever-bottega-mortet-catalog.csv`](./catalog/og4ever-bottega-mortet-catalog.csv) is the source of truth for what can be structured and how. Columns: artist, medium, edition size, indicative price, **publicity-rights risk tier**, **recommended structuring path**, and reviewer notes.
+[`catalog/og4ever-bottega-mortet-catalog.csv`](./catalog/og4ever-bottega-mortet-catalog.csv) is the source of truth for what can be structured and how. Columns: artist, medium, edition size, indicative price, **publicity-rights risk tier**, **trademark/logo risk** (added 2026-08-17, see finding below), **recommended structuring path**, and reviewer notes for each axis.
 
 ```mermaid
 pie showData
-    title 74 pieces by risk tier
+    title 74 pieces by publicity-rights tier (axis 1 of 2)
     "HIGH / MEDIUM-HIGH — blocked pending licensing" : 44
     "MEDIUM — private release needed" : 12
-    "LOW / N-A — cleanest, move first" : 18
+    "LOW / N-A — cleanest on THIS axis alone" : 18
 ```
 
-Counts computed directly from the CSV (`Publicity-Rights Risk Tier` column) — recount if the catalog changes rather than trusting this number to stay in sync on its own.
+```mermaid
+pie showData
+    title 74 pieces by trademark/logo risk (axis 2 of 2, added after the Miami Bull finding)
+    "Yes / Yes-confirmed — third-party brand visible" : 52
+    "Possible — nominative or partial exposure" : 2
+    "Unclear — not yet visually re-verified" : 6
+    "No — genuinely clean" : 14
+```
 
-Read the CSV before writing any new deployment script against a piece that isn't already in it.
+Counts computed directly from the CSV — recount if the catalog changes rather than trusting these numbers to stay in sync on their own.
+
+### Finding: publicity-rights clearance is not trademark clearance (2026-08-17)
+
+*Miami Bull* (AL-02, Anita Lewis) passed the original publicity-rights review cleanly — Formula 1 car, no driver's face shown, tagged `N/A - NOT DEPICTING A PERSON` and cleared as a "strong candidate" for Path A. A follow-up visual review found the painting spells out the **"ORACLE"** sponsor wordmark prominently across the livery, plus **Mobil 1** and **Bosch** marks — real, active corporate trademark material that the original review taxonomy was never built to catch, because it only checked for a depicted *person's* likeness, not a depicted *brand's* mark.
+
+Widening the check to the rest of the catalog found the same gap in two more places already sitting in the "cleanest" tier: **Betirri's kit paintings** (BE-01/02/03 — Argentina/Brazil, River/Boca, Inter/Milan crests, no faces shown) and **Felipe Jacome's club-player prints** (FJ-01/02/03 — visible club kit branding on a subject who isn't a global public figure). All six pieces are now marked `BLOCKED pending trademark clearance` in the CSV, downgraded from their original "strong candidate" status. *David on the Move* (BM-07) and Dwyane Wade's own two pieces (DW-01/02) are the only pieces in the original clean tier that hold up on both axes — DW-01/02 carry a separate, softer flag: the physical medium is an NBA-branded game-floor segment, worth a chain-of-title check even though the painted image itself shows no logo.
+
+**Read `Trademark / Logo Risk` alongside `Publicity-Rights Risk Tier`, not instead of it, before treating any piece as cleared.**
 
 ## Contracts
 
@@ -244,9 +261,12 @@ Start on `--env test` (BitGo sandbox) for everything. Production runs require `C
 - [ ] External security audit of both contracts (currently unaudited — do not deploy to mainnet before this)
 - [ ] Reconcile `ArtCustodyReceipt.sol` against `MomentRelicVault.sol` to avoid duplicate custody-vault logic
 - [ ] Publicity-rights licensing for the 44 HIGH/MEDIUM-HIGH catalog pieces (see [catalog](./catalog))
+- [ ] Trademark clearance for the 6 pieces downgraded 2026-08-17 (BE-01/02/03, FJ-01/02/03) plus a formal opinion on AL-02 (*Miami Bull*) before any of them re-enters a cleared tier
+- [ ] Chain-of-title confirmation for DW-01/02's underlying NBA game-floor segment
 - [ ] Pin the 6 hashed pieces to a live IPFS network
 - [ ] Provision the first live BitGo sandbox wallet end-to-end
-- [ ] Deploy [relics.unykorn.ai](https://relics.unykorn.ai) (site built, awaiting a Cloudflare deploy token)
+- [x] Deploy [relics.unykorn.ai](https://relics.unykorn.ai) — live 2026-08-17
+- [ ] Add the site source itself to this repo (currently deployed from a separate local build, not yet checked in here)
 - [ ] Securities counsel review of Path A (Reg A+) vs. Path B (Reg D 506(c)) before any offering document is drafted
 
 ---
