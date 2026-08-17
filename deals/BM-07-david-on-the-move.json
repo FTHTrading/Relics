@@ -1,0 +1,11 @@
+{
+  "spvId": "BM-07",
+  "label": "BM-07 David on the Move -- Proceeds Vault",
+  "coin": "teth",
+  "enterprise": "REPLACE_WITH_LIVE_ENTERPRISE_ID",
+  "counterpartyEmail": "info@dantemortet.com",
+  "counterpartyPermissions": "view",
+  "dailyVelocityLimitMinorUnits": "5000000000000000000",
+  "fourEyesThresholdMinorUnits": "1000000000000000000",
+  "webhookUrl": "https://REPLACE-WITH-YOUR-BITGO-WEBHOOK-HOST/hooks/bitgo/BM-07"
+}

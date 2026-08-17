@@ -1,0 +1,20 @@
+{
+  "name": "relics",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tokenization infrastructure for physical collectibles -- sculpture, relic art, trading cards. SPV fractional shares (ArtEditionSPV) and whole-object custody receipts (ArtCustodyReceipt), IPFS-anchored metadata, BitGo segregated-wallet custody.",
+  "scripts": {
+    "compile": "node scripts/compile.js",
+    "build-metadata": "node scripts/build_ipfs_metadata.js",
+    "pin": "node scripts/pin_to_ipfs.js",
+    "provision-wallet": "node scripts/provision_spv_wallet.js"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.2",
+    "bitgo": "^52.7.0",
+    "formdata-node": "^6.0.3",
+    "ipfs-only-hash": "^4.0.0",
+    "solc": "0.8.24"
+  },
+  "license": "MIT"
+}
